@@ -1,0 +1,356 @@
+basePath: /
+definitions:
+  models.Response:
+    description: Standard response structure.
+    properties:
+      data:
+        description: Data
+      message:
+        description: Message
+        type: string
+    type: object
+  models.ResponseError:
+    description: Error response structure.
+    properties:
+      error:
+        description: Error type
+        type: string
+      message:
+        description: Error message
+        type: string
+      status:
+        description: HTTP status code
+        type: integer
+    type: object
+  models.SegmentRequest:
+    properties:
+      slug:
+        description: segment name
+        example: DISCOUNT_30
+        type: string
+    type: object
+  models.Segments:
+    properties:
+      id:
+        type: integer
+      slug:
+        type: string
+    type: object
+  models.UpdateSegmentsRequest:
+    description: Request payload for updating a user's associated segments.
+    properties:
+      add_segments:
+        description: Segments to add
+        example:
+        - '["VOICE_MESSAGES"]'
+        items:
+          type: string
+        type: array
+      delete_segments:
+        description: Segments to delete
+        example:
+        - '["CHAT_SUPPORT"]'
+        items:
+          type: string
+        type: array
+      ttl:
+        description: TTL default NULL
+        type: string
+      user_id:
+        description: User's unique ID
+        example: 123
+        type: integer
+    type: object
+  models.UserSegment:
+    description: Model representing a relationship between a user and a segment.
+    properties:
+      segments:
+        description: Associated segment
+        type: string
+      user_id:
+        description: User's unique ID
+        type: integer
+    type: object
+  models.Users:
+    properties:
+      name:
+        description: User's name
+        type: string
+      user_id:
+        description: User's unique ID
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: artorison@gmail.com
+    name: API Support
+  description: API documentation.
+  title: Dynamic User Groups API
+  version: "1.0"
+paths:
+  /segments:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a segment from the system using the provided slug.
+      parameters:
+      - description: Segment data
+        in: body
+        name: segment
+        required: true
+        schema:
+          $ref: '#/definitions/models.SegmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Segment deleted successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid slug
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Failed to delete segment
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Delete a segment
+      tags:
+      - Segments
+    get:
+      description: Fetches a list of all segments stored in the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of segments
+          schema:
+            items:
+              $ref: '#/definitions/models.Segments'
+            type: array
+        "500":
+          description: Failed to retrieve segments
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Retrieve all segments
+      tags:
+      - Segments
+    post:
+      consumes:
+      - application/json
+      description: Adds a new segment to the database.
+      parameters:
+      - description: Segment data
+        in: body
+        name: segment
+        required: true
+        schema:
+          $ref: '#/definitions/models.SegmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Segment created successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid slug
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Failed to create segment
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Create a new segment
+      tags:
+      - Segments
+  /user_segments:
+    get:
+      description: Fetches all user-to-segment mappings stored in the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user-segment relationships
+          schema:
+            items:
+              $ref: '#/definitions/models.UserSegment'
+            type: array
+        "500":
+          description: Failed to retrieve user segments
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Retrieve all user-segment relationships
+      tags:
+      - UserSegments
+    patch:
+      consumes:
+      - application/json
+      description: Adds or removes segments associated with a user.
+      parameters:
+      - description: Segments to add or remove
+        in: body
+        name: userSegment
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateSegmentsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User segments updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Failed to update user segments
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Update a user's segments
+      tags:
+      - UserSegments
+  /user_segments/{user_id}:
+    get:
+      description: Retrieves all segments associated with a user by user ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user segments
+          schema:
+            items:
+              $ref: '#/definitions/models.UserSegment'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Failed to retrieve user segments
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Get segments for a user
+      tags:
+      - UserSegments
+  /user_segments/history/{user_id}:
+    get:
+      description: Generate a CSV file containing the user's segment history for a
+        specific month.
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Year-Month in YYYY-MM format
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: URL to the generated CSV file
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Generate User History CSV
+      tags:
+      - UserSegmentHistory
+  /users:
+    get:
+      description: Retrieves all users from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/models.Users'
+            type: array
+        "400":
+          description: Failed to retrieve users
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Get all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Adds a new user to the database.
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.Users'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid JSON payload
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Failed to create user
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a user from the database by ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Failed to delete user
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Delete a user
+      tags:
+      - Users
+swagger: "2.0"
