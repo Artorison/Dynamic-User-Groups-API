@@ -72,7 +72,6 @@ kafka:
   topic: "user-segments"
 ```
 
-
 ---
 ## 3. Запуск через Docker
 
