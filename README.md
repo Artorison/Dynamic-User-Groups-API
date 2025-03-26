@@ -140,13 +140,13 @@ $ make up
 │   │   ├── segment.go
 │   │   ├── us_seg_history.go
 │   │   ├── user.go
-│   │   └── user_seg.goпользователей
+│   │   └── user_seg.go
 │   ├── repository/
 │   │   ├── mocks/
 │   │   ├── segment_repo.go
 │   │   ├── user_repo.go
 │   │   ├── user_seg_repo.go
-│   │   └── user_segment_history.goизменений групп
+│   │   └── user_segment_history.go
 │   ├── services/
 │   │   ├── mocks/
 │   │   ├── segment_service.go
