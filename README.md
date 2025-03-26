@@ -118,7 +118,7 @@ $ make up
 ├── internal/
 │   ├── app/
 │   │   ├── app.go
-│   │   ├── di.goнастройка зависимостей
+│   │   ├── di.go
 │   │   ├── middleware.go
 │   │   └── routes.go
 │   ├── config/
